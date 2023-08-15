@@ -35,5 +35,5 @@ if __name__ == "__main__":
     else:
         trainer = pl.Trainer(max_epochs=1,enable_model_summary=True,logger=wandb_logger)
         train_data = DataLoader(train_data,batch_size=2,shuffle=True,drop_last=True)
-        val_data = DataLoader(val_data,batch_size=2,shuffle=True)
-    trainer.fit(model, train_data,val_dataloaders=val_data,drop_last=True)
+        val_data = DataLoader(val_data,batch_size=2,shuffle=True,drop_last=True)
+    trainer.fit(model, train_data,val_dataloaders=val_data)
