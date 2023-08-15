@@ -20,8 +20,6 @@ if __name__ == "__main__":
     tokenizer = AutoTokenizer.from_pretrained("codeBERTa")
     tokenizer.pad_token = tokenizer.eos_token
     train_data, val_data = load_match_data(tokenizer,max_length=512)
-    train_data = DataLoader(train_data,batch_size=2,shuffle=True)
-    val_data = DataLoader(val_data,batch_size=2,shuffle=True)
     
     if model_name == "LstmPlusTransformerModule":
         model = LstmPlusTransformerModule(tokenizer.vocab_size,out_size=6)
@@ -32,6 +30,10 @@ if __name__ == "__main__":
 
     if torch.cuda.is_available():
         trainer = pl.Trainer(max_epochs=1,enable_model_summary=True,logger=wandb_logger,devices=[0],accelerator='gpu')
+        train_data = DataLoader(train_data,batch_size=32,shuffle=True,drop_last=True)
+        val_data = DataLoader(val_data,batch_size=32,shuffle=True,drop_last=True)
     else:
         trainer = pl.Trainer(max_epochs=1,enable_model_summary=True,logger=wandb_logger)
-    trainer.fit(model, train_data,val_dataloaders=val_data)
+        train_data = DataLoader(train_data,batch_size=2,shuffle=True,drop_last=True)
+        val_data = DataLoader(val_data,batch_size=2,shuffle=True)
+    trainer.fit(model, train_data,val_dataloaders=val_data,drop_last=True)
