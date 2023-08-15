@@ -10,17 +10,17 @@ import wandb
 import torch
 
 debug = False
-config = wandb.config
-config.batch_size = 32
-config.model_name = "RetNetClassifier"
-config.lr = 1e-3
-config.tokenizer_name = "codeBERTa"
-config.max_length = 512
-config.num_classes = 6
 
 if not debug:
     wandb.login(key='7636d0cc1edf410cae67d21d09968d70d6791a89')
-    wandb_logger = WandbLogger(project="logDetect",name=f"tokenizer-{config.tokenizer_name}-name-{config.model_name}",save_dir="logs")
+    wandb_logger = WandbLogger(project="logDetect",name="baselineTrainer",save_dir="logs")
+    config = wandb_logger.experiment.config
+    config.batch_size = 32
+    config.model_name = "RetNetClassifier"
+    config.lr = 1e-3
+    config.tokenizer_name = "codeBERTa"
+    config.max_length = 512
+    config.num_classes = 6
 
 if __name__ == "__main__":
     tokenizer = AutoTokenizer.from_pretrained("codeBERTa")
@@ -39,7 +39,7 @@ if __name__ == "__main__":
     else:
         config.batch_size = 2
         trainer = pl.Trainer(max_epochs=1,enable_model_summary=True,logger=wandb_logger)
-        
+
     train_data = DataLoader(train_data,batch_size=config.batch_size,shuffle=True,drop_last=True)
     val_data = DataLoader(val_data,batch_size=config.batch_size,shuffle=True,drop_last=True)
     trainer.fit(model, train_data,val_dataloaders=val_data)
