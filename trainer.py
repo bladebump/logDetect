@@ -7,6 +7,7 @@ from pytorch_lightning.loggers import WandbLogger
 from transformers import AutoTokenizer
 from torch.utils.data import DataLoader
 import wandb
+import torch
 
 debug = False
 model_name = "RetNetClassifier"
@@ -29,5 +30,8 @@ if __name__ == "__main__":
     elif model_name == "RetNetClassifier":
         model = RetNetClassifier(tokenizer.vocab_size,num_classes=6)
 
-    trainer = pl.Trainer(max_epochs=1,enable_model_summary=True,logger=wandb_logger)
+    if torch.cuda.is_available():
+        trainer = pl.Trainer(max_epochs=1,enable_model_summary=True,logger=wandb_logger,devices=[0],accelerator='gpu')
+    else:
+        trainer = pl.Trainer(max_epochs=1,enable_model_summary=True,logger=wandb_logger)
     trainer.fit(model, train_data,val_dataloaders=val_data)
