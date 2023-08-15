@@ -16,7 +16,7 @@ class LstmPlusTransformerModule(pl.LightningModule):
         # Lstm decoder
         self.decoder = nn.LSTM(embed_size,embed_size,1,batch_first=True)
         
-        self.linear = nn.Linear(vocab_size,out_size)
+        self.linear = nn.Linear(embed_size,out_size)
 
         self.acc = Accuracy(task='multiclass',num_classes=out_size)
 
