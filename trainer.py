@@ -1,5 +1,5 @@
 from datachange import load_match_data
-from models import TransformereEncoderClassifier,LstmPlusTransformerModule,RetNetClassifier,LstmClassifier,textCnnClassifier
+from models import TransformereEncoderClassifier,LstmPlusTransformerModule,RetNetClassifier,LstmClassifier,textCnnClassifier,textCnnAndLstmClassifier
 import pytorch_lightning as pl
 from pytorch_lightning.loggers import WandbLogger
 from transformers import AutoTokenizer
@@ -52,6 +52,8 @@ if __name__ == "__main__":
         model = LstmClassifier(tokenizer.vocab_size,num_classes=config.num_classes,lr=config.lr)
     elif config.model_name == "textCnnClassifier":
         model = textCnnClassifier(tokenizer.vocab_size,num_classes=config.num_classes,lr=config.lr)
+    elif config.model_name == "textCnnAndLstmClassifier":
+        model = textCnnAndLstmClassifier(tokenizer.vocab_size,num_classes=config.num_classes,lr=config.lr)
 
     if torch.cuda.is_available():
         trainer = pl.Trainer(max_epochs=config.epochs,enable_model_summary=True,logger=wandb_logger,devices=[0],accelerator='gpu')
