@@ -1,38 +1,51 @@
 from datachange import load_match_data
-from models.test import TestModule
-from models.lstmDecoder import LstmPlusTransformerModule
-from models.retnet import RetNetClassifier
+from models import TestModule,LstmPlusTransformerModule,RetNetClassifier,LstmClassifier
 import pytorch_lightning as pl
 from pytorch_lightning.loggers import WandbLogger
 from transformers import AutoTokenizer
 from torch.utils.data import DataLoader
 import wandb
 import torch
-
-debug = False
-
-if not debug:
-    wandb.login(key='7636d0cc1edf410cae67d21d09968d70d6791a89')
-    wandb_logger = WandbLogger(project="logDetect",name="baselineTrainer",save_dir="logs")
-    config = wandb_logger.experiment.config
-    config.batch_size = 32
-    config.model_name = "RetNetClassifier"
-    config.lr = 1e-3
-    config.tokenizer_name = "codeBERTa"
-    config.max_length = 512
-    config.num_classes = 6
+import argparse
 
 if __name__ == "__main__":
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--rune_name",type=str)
+    parser.add_argument("--model_name",type=str,default="LstmPlusTransformerModule")
+    parser.add_argument("--lr",type=float,default=1e-3)
+    parser.add_argument("--batch_size",type=int,default=32)
+    parser.add_argument("--max_length",type=int,default=512)
+    parser.add_argument("--num_classes",type=int,default=6)
+    parser.add_argument("--tokenizer_name",type=str,default="codeBERTa")
+    parser.add_argument("--debug",type=bool,default=False)
+    args = parser.parse_args()
+
+    debug = args.debug
+
+    if not debug:
+        wandb.login(key='7636d0cc1edf410cae67d21d09968d70d6791a89')
+        wandb_logger = WandbLogger(project="logDetect",name=args.rune_name,save_dir="logs")
+        config = wandb_logger.experiment.config
+        config.batch_size = args.batch_size
+        config.model_name = args.model_name
+        config.lr = args.lr
+        config.tokenizer_name = args.tokenizer_name
+        config.max_length = args.max_length
+        config.num_classes = args.num_classes
+
     tokenizer = AutoTokenizer.from_pretrained("codeBERTa")
     tokenizer.pad_token = tokenizer.eos_token
     train_data, val_data = load_match_data(tokenizer,max_length=config.max_length)
     
     if config.model_name == "LstmPlusTransformerModule":
-        model = LstmPlusTransformerModule(tokenizer.vocab_size,out_size=config.num_classes)
+        model = LstmPlusTransformerModule(tokenizer.vocab_size,out_size=config.num_classes,lr=config.lr)
     elif config.model_name == "TestModule":
-        model = TestModule(tokenizer.vocab_size,out_size=config.num_classes)
+        model = TestModule(tokenizer.vocab_size,out_size=config.num_classes,lr=config.lr)
     elif config.model_name == "RetNetClassifier":
-        model = RetNetClassifier(tokenizer.vocab_size,num_classes=config.num_classes)
+        model = RetNetClassifier(tokenizer.vocab_size,num_classes=config.num_classes,lr=config.lr)
+    elif config.model_name == "LstmClassifier":
+        model = LstmClassifier(tokenizer.vocab_size,num_classes=config.num_classes,lr=config.lr)
 
     if torch.cuda.is_available():
         trainer = pl.Trainer(max_epochs=1,enable_model_summary=True,logger=wandb_logger,devices=[0],accelerator='gpu')

@@ -2,8 +2,7 @@ from torchscale.architecture.config import RetNetConfig
 from torchscale.architecture.retnet import RetNetDecoder
 import torch
 from torch.nn import Embedding,AdaptiveAvgPool1d
-import pytorch_lightning as pl
-from torchmetrics import Accuracy
+from .base import BaseClassifier
 
 def get_retnet_model(vocab_size,EmbeddingLayer,layer_num=12):
     config = RetNetConfig(
@@ -48,15 +47,14 @@ def get_retnet_model(vocab_size,EmbeddingLayer,layer_num=12):
 
     return model
 
-class RetNetClassifier(pl.LightningModule):
-    def __init__(self, vocab_size, num_classes, layer_num=1):
-        super().__init__()
+class RetNetClassifier(BaseClassifier):
+    def __init__(self, vocab_size, num_classes, lr,layer_num=1):
+        super(RetNetClassifier, self).__init__(vocab_size, num_classes, lr)
+
         self.embed = Embedding(vocab_size, 768)
         self.model = get_retnet_model(vocab_size,self.embed,layer_num=layer_num)
         self.gblobel_avg_pool = AdaptiveAvgPool1d(1)
         self.classifier = torch.nn.Linear(vocab_size, num_classes)
-        self.loss = torch.nn.CrossEntropyLoss()
-        self.acc = Accuracy(task='multiclass',num_classes=num_classes)
 
     def forward(self, x):
         x = self.model(x)
@@ -65,35 +63,9 @@ class RetNetClassifier(pl.LightningModule):
         x = self.gblobel_avg_pool(x)
         return x.squeeze()
 
-    def one_step(self,batch,batch_idx,out_str):
-        input_ids, attention_mask, labels = batch['input_ids'], batch['attention_mask'], batch['label']
-        outputs = self.forward(input_ids)
-        loss = self.loss(outputs, labels)
-        self.log(out_str + "_loss", loss)
-        acc = self.acc(outputs, labels)
-        self.log(out_str + '_acc', acc)
-        return loss
-    
-    def training_step(self, batch, batch_idx):
-        return self.one_step(batch,batch_idx,'train')
-    
-    def validation_step(self, batch, batch_idx):
-        return self.one_step(batch,batch_idx,'val')
-    
-    def test_step(self, batch, batch_idx):
-        return self.one_step(batch,batch_idx,'test')
-    
-    def configure_optimizers(self):
-        optimizer = torch.optim.Adam(self.parameters(), lr=1e-3)
-        return optimizer
-
 
 if __name__ == "__main__":
-    model = RetNetClassifier(vocab_size=1000,num_classes=6,layer_num=1)
-
-    # print total number of parameters
-    num_params = [p.numel() for p in model.parameters()]
-    print(f"Number of parameters: {num_params}")
+    model = RetNetClassifier(vocab_size=1000,num_classes=6,lr=1e-3,layer_num=1)
 
     # random input
     x = torch.randint(0, 1000, (2, 512))

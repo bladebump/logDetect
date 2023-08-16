@@ -1,12 +1,11 @@
-from typing import Any
 import torch
 import torch.nn as nn
-import pytorch_lightning as pl
-from torchmetrics import Accuracy
+from .base import BaseClassifier
 
-class LstmPlusTransformerModule(pl.LightningModule):
-    def __init__(self,vocab_size,out_size,embed_size=756):
-        super(LstmPlusTransformerModule, self).__init__()
+class LstmPlusTransformerModule(BaseClassifier):
+    def __init__(self,vocab_size,num_classes,lr,embed_size=756):
+        super(LstmPlusTransformerModule, self).__init__(vocab_size,num_classes,lr)
+
         self.embed = nn.Embedding(vocab_size,embed_size)
 
         # one layer transformer
@@ -16,9 +15,7 @@ class LstmPlusTransformerModule(pl.LightningModule):
         # Lstm decoder
         self.decoder = nn.LSTM(embed_size,embed_size,1,batch_first=True)
         
-        self.linear = nn.Linear(embed_size,out_size)
-
-        self.acc = Accuracy(task='multiclass',num_classes=out_size)
+        self.linear = nn.Linear(embed_size,num_classes)
 
     def forward(self, input_ids, attention_mask=None, **kwargs):
         if attention_mask is not None:
@@ -32,31 +29,8 @@ class LstmPlusTransformerModule(pl.LightningModule):
         x = self.linear(x)
         return x
     
-    def configure_optimizers(self):
-        optimizer = torch.optim.Adam(self.parameters(), lr=1e-3)
-        return optimizer
-    
-    def one_step(self,batch,batch_idx,out_str):
-        input_ids, attention_mask, labels = batch['input_ids'], batch['attention_mask'], batch['label']
-        outputs = self.forward(input_ids, attention_mask)
-        lossfn = nn.CrossEntropyLoss()
-        loss = lossfn(outputs, labels)
-        self.log(out_str + "_loss", loss)
-        acc = self.acc(outputs, labels)
-        self.log(out_str + '_acc', acc)
-        return loss
-    
-    def training_step(self, batch, batch_idx):
-        return self.one_step(batch,batch_idx,'train')
-    
-    def validation_step(self, batch, batch_idx):
-        return self.one_step(batch,batch_idx,'val')
-    
-    def test_step(self, batch, batch_idx):
-        return self.one_step(batch,batch_idx,'test')
-    
 if __name__ == "__main__":
-    model = LstmPlusTransformerModule(1000,2)
+    model = LstmPlusTransformerModule(1000,2,1e-3)
     x = torch.randint(0,1000,(2,512))
     y = model(x)
     print(y.shape)
