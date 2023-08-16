@@ -1,5 +1,5 @@
 from datachange import load_match_data
-from models import TestModule,LstmPlusTransformerModule,RetNetClassifier,LstmClassifier
+from models import TestModule,LstmPlusTransformerModule,RetNetClassifier,LstmClassifier,textCnnClassifier
 import pytorch_lightning as pl
 from pytorch_lightning.loggers import WandbLogger
 from transformers import AutoTokenizer
@@ -20,6 +20,7 @@ if __name__ == "__main__":
     parser.add_argument("--tokenizer_name",type=str,default="codeBERTa")
     parser.add_argument("--debug",type=bool,default=False)
     parser.add_argument("--epochs",type=int,default=1)
+    parser.add_argument("--seed",type=int,default=42)
     args = parser.parse_args()
 
     debug = args.debug
@@ -35,10 +36,11 @@ if __name__ == "__main__":
         config.max_length = args.max_length
         config.num_classes = args.num_classes
         config.epochs = args.epochs
+        config.seed = args.seed
 
     tokenizer = AutoTokenizer.from_pretrained("codeBERTa")
     tokenizer.pad_token = tokenizer.eos_token
-    train_data, val_data = load_match_data(tokenizer,max_length=config.max_length)
+    train_data, val_data = load_match_data(tokenizer,max_length=config.max_length,random_seed=config.seed)
     
     if config.model_name == "LstmPlusTransformerModule":
         model = LstmPlusTransformerModule(tokenizer.vocab_size,num_classes=config.num_classes,lr=config.lr)
@@ -48,6 +50,8 @@ if __name__ == "__main__":
         model = RetNetClassifier(tokenizer.vocab_size,num_classes=config.num_classes,lr=config.lr)
     elif config.model_name == "LstmClassifier":
         model = LstmClassifier(tokenizer.vocab_size,num_classes=config.num_classes,lr=config.lr)
+    elif config.model_name == "textCnnClassifier":
+        model = textCnnClassifier(tokenizer.vocab_size,num_classes=config.num_classes,lr=config.lr)
 
     if torch.cuda.is_available():
         trainer = pl.Trainer(max_epochs=config.epochs,enable_model_summary=True,logger=wandb_logger,devices=[0],accelerator='gpu')

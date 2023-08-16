@@ -25,7 +25,7 @@ def load_files_to_dict(filepath:Path):
             label += 1
     return total
 
-def load_match_data(tokenzier:Tokenizer, max_length:int=512):
+def load_match_data(tokenzier:Tokenizer, max_length:int=512,random_seed:int=42):
     """
     Load the data and return it as a tuple.
     """
@@ -33,8 +33,15 @@ def load_match_data(tokenzier:Tokenizer, max_length:int=512):
     data = datasets.Dataset.from_list(data)
     data.set_format('pt')
     data = data.map(lambda x: tokenzier(x['text'],truncation=True,max_length=max_length,padding="max_length"),batched=True)
-    data = data.train_test_split(test_size=0.1)
+    data = data.train_test_split(test_size=0.2,seed=random_seed)
     return data['train'], data['test']
 
 if __name__ == "__main__":
-    load_match_data()
+    from transformers import AutoTokenizer
+    tokenizer = AutoTokenizer.from_pretrained("codeBERTa")
+    train_data,val_data = load_match_data(tokenizer)
+
+    from collections import Counter
+    label1 = Counter(train_data['label'])
+    label2 = Counter(val_data['label'])
+    print(label1,label2)
