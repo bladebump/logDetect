@@ -56,8 +56,8 @@ class RetNetClassifier(BaseClassifier):
         self.gblobel_avg_pool = AdaptiveAvgPool1d(1)
         self.classifier = torch.nn.Linear(vocab_size, num_classes)
 
-    def forward(self, x):
-        x = self.model(x)
+    def forward(self, input_ids, attention_mask=None, **kwargs):
+        x = self.model(input_ids)
         x = self.classifier(x[0])
         x = x.permute(0, 2, 1)
         x = self.gblobel_avg_pool(x)
