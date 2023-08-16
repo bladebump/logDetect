@@ -1,6 +1,6 @@
 from .retnet import RetNetClassifier
 from .lstmDecoder import LstmPlusTransformerModule
-from .test import TestModule
+from .transformerEncoder import TestModule
 from .textcnn import textCnnClassifier
 from .Lstm import LstmClassifier
 
