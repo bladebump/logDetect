@@ -19,6 +19,7 @@ if __name__ == "__main__":
     parser.add_argument("--num_classes",type=int,default=6)
     parser.add_argument("--tokenizer_name",type=str,default="codeBERTa")
     parser.add_argument("--debug",type=bool,default=False)
+    parser.add_argument("--epochs",type=int,default=1)
     args = parser.parse_args()
 
     debug = args.debug
@@ -33,6 +34,7 @@ if __name__ == "__main__":
         config.tokenizer_name = args.tokenizer_name
         config.max_length = args.max_length
         config.num_classes = args.num_classes
+        config.epochs = args.epochs
 
     tokenizer = AutoTokenizer.from_pretrained("codeBERTa")
     tokenizer.pad_token = tokenizer.eos_token
@@ -48,10 +50,10 @@ if __name__ == "__main__":
         model = LstmClassifier(tokenizer.vocab_size,num_classes=config.num_classes,lr=config.lr)
 
     if torch.cuda.is_available():
-        trainer = pl.Trainer(max_epochs=1,enable_model_summary=True,logger=wandb_logger,devices=[0],accelerator='gpu')
+        trainer = pl.Trainer(max_epochs=config.epochs,enable_model_summary=True,logger=wandb_logger,devices=[0],accelerator='gpu')
     else:
         config.batch_size = 2
-        trainer = pl.Trainer(max_epochs=1,enable_model_summary=True,logger=wandb_logger)
+        trainer = pl.Trainer(max_epochs=config.epochs,enable_model_summary=True,logger=wandb_logger)
 
     train_data = DataLoader(train_data,batch_size=config.batch_size,shuffle=True,drop_last=True)
     val_data = DataLoader(val_data,batch_size=config.batch_size,shuffle=True,drop_last=True)
