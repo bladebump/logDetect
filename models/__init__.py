@@ -1,7 +1,7 @@
 from .retnet import RetNetClassifier
 from .lstmDecoder import LstmPlusTransformerModule
-from .transformerEncoder import TestModule
+from .transformerEncoder import TransformereEncoderClassifier
 from .textcnn import textCnnClassifier
 from .Lstm import LstmClassifier
 
-__all__ = ['RetNetClassifier', 'LstmPlusTransformerModule', 'TestModule','BaseClassifier','LstmClassifier','textCnnClassifier']
+__all__ = ['RetNetClassifier', 'LstmPlusTransformerModule', 'TransformereEncoderClassifier','BaseClassifier','LstmClassifier','textCnnClassifier']
