@@ -1,5 +1,5 @@
 from datachange import load_match_data
-from models import TestModule,LstmPlusTransformerModule,RetNetClassifier,LstmClassifier,textCnnClassifier
+from models import TransformereEncoderClassifier,LstmPlusTransformerModule,RetNetClassifier,LstmClassifier,textCnnClassifier
 import pytorch_lightning as pl
 from pytorch_lightning.loggers import WandbLogger
 from transformers import AutoTokenizer
@@ -38,14 +38,14 @@ if __name__ == "__main__":
         config.epochs = args.epochs
         config.seed = args.seed
 
-    tokenizer = AutoTokenizer.from_pretrained("codeBERTa")
+    tokenizer = AutoTokenizer.from_pretrained(config.tokenizer_name)
     tokenizer.pad_token = tokenizer.eos_token
     train_data, val_data = load_match_data(tokenizer,max_length=config.max_length,random_seed=config.seed)
     
     if config.model_name == "LstmPlusTransformerModule":
         model = LstmPlusTransformerModule(tokenizer.vocab_size,num_classes=config.num_classes,lr=config.lr)
-    elif config.model_name == "TestModule":
-        model = TestModule(tokenizer.vocab_size,num_classes=config.num_classes,lr=config.lr)
+    elif config.model_name == "TransformereEncoderClassifier":
+        model = TransformereEncoderClassifier(tokenizer.vocab_size,num_classes=config.num_classes,lr=config.lr)
     elif config.model_name == "RetNetClassifier":
         model = RetNetClassifier(tokenizer.vocab_size,num_classes=config.num_classes,lr=config.lr)
     elif config.model_name == "LstmClassifier":
