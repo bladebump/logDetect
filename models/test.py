@@ -4,15 +4,15 @@ import torch.nn as nn
 from .base import BaseClassifier
 
 class TestModule(BaseClassifier):
-    def __init__(self,vocab_size,out_size,lr,embed_size=756):
-        super(TestModule, self).__init__(vocab_size,out_size,lr)
+    def __init__(self,vocab_size,num_classes,lr,embed_size=756):
+        super(TestModule, self).__init__(vocab_size,num_classes,lr)
         self.embed = nn.Embedding(vocab_size,embed_size)
 
         # one layer transformer
         encoderlayer = nn.TransformerEncoderLayer(embed_size, 3, 2048, 0.1)
         self.transformer = nn.TransformerEncoder(encoderlayer, 1)
         
-        self.linear = nn.Linear(embed_size,out_size)
+        self.linear = nn.Linear(embed_size,num_classes)
         self.gblobel_avg_pool = nn.AdaptiveAvgPool1d(1)
 
 

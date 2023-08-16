@@ -12,7 +12,7 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--rune_name",type=str)
-    parser.add_argument("--model_name",type=str,default="LstmPlusTransformerModule")
+    parser.add_argument("--model_name",type=str,default="TestModule")
     parser.add_argument("--lr",type=float,default=1e-3)
     parser.add_argument("--batch_size",type=int,default=32)
     parser.add_argument("--max_length",type=int,default=512)
@@ -41,9 +41,9 @@ if __name__ == "__main__":
     train_data, val_data = load_match_data(tokenizer,max_length=config.max_length)
     
     if config.model_name == "LstmPlusTransformerModule":
-        model = LstmPlusTransformerModule(tokenizer.vocab_size,out_size=config.num_classes,lr=config.lr)
+        model = LstmPlusTransformerModule(tokenizer.vocab_size,num_classes=config.num_classes,lr=config.lr)
     elif config.model_name == "TestModule":
-        model = TestModule(tokenizer.vocab_size,out_size=config.num_classes,lr=config.lr)
+        model = TestModule(tokenizer.vocab_size,num_classes=config.num_classes,lr=config.lr)
     elif config.model_name == "RetNetClassifier":
         model = RetNetClassifier(tokenizer.vocab_size,num_classes=config.num_classes,lr=config.lr)
     elif config.model_name == "LstmClassifier":
