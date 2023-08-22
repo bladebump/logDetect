@@ -36,12 +36,36 @@ def load_match_data(tokenzier:Tokenizer, max_length:int=512,random_seed:int=42):
     data = data.train_test_split(test_size=0.2,seed=random_seed)
     return data['train'], data['test']
 
+def load_bigdata_to_dict(filepath:Path):
+    if filepath.is_dir():
+        files = filepath.glob("*.csv")
+        total = []
+        for file in files:
+            with open(file,'r',encoding='utf-8') as f:
+                lines = f.readlines()
+                for line in lines[1:]:
+                    label,text = line.split(',',1)
+                    label = int(label)
+                    text = text.strip()[1:-1]
+                    total.append({'text':text,'label':label})
+    return total
+
+def load_bigdata(tokenzier:Tokenizer, max_length:int=512,random_seed:int=42):
+    """
+    Load the data and return it as a tuple.
+    """
+    data = load_bigdata_to_dict(Path("bigdata"))
+    data = datasets.Dataset.from_list(data)
+    data.set_format('pt')
+    data = data.map(lambda x: tokenzier(x['text'],truncation=True,max_length=max_length,padding="max_length"),batched=True)
+    data = data.train_test_split(test_size=0.2,seed=random_seed)
+    return data['train'], data['test']
+
 if __name__ == "__main__":
     from transformers import AutoTokenizer
     tokenizer = AutoTokenizer.from_pretrained("codeBERTa")
-    train_data,val_data = load_match_data(tokenizer)
-
+    
+    
+    data_train,data_test = load_bigdata(tokenizer)
     from collections import Counter
-    label1 = Counter(train_data['label'])
-    label2 = Counter(val_data['label'])
-    print(label1,label2)
+    print(Counter(data_train['label']))
