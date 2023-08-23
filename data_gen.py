@@ -4,8 +4,6 @@ from urllib.parse import unquote
 import pandas as pd
 
 base_dir = pathlib.Path(r"C:\Users\yfq61\Documents\project\log_data2")
-csv_list = list(base_dir.glob("*.csv"))
-test_file = csv_list[0]
 one_file_limit = 1000000
 columns = ['用户ip', '时间', '响应状态码', '包体长度', '访问的方法', '访问的路径', '访问的参数', '跳转地址', '用户请求头', '攻击标签']
 attack_type_list = ['SQL注入', '远程代码执行', 'XSS', 'webshell', '漏洞攻击']
