@@ -2,6 +2,7 @@ import datasets
 from tokenizers import Tokenizer
 import pandas as pd
 from pathlib import Path
+import pandas as pd
 
 def load_data(tokenzier:Tokenizer, max_length:int=512):
     """
@@ -41,24 +42,26 @@ def load_bigdata_to_dict(filepath:Path):
         files = filepath.glob("*.csv")
         total = []
         for file in files:
-            with open(file,'r',encoding='utf-8') as f:
-                lines = f.readlines()
-                for line in lines[1:]:
-                    label,text = line.split(',',1)
-                    label = int(label)
-                    text = text.strip()[1:-1]
-                    total.append({'text':text,'label':label})
+            temp_df = pd.read_csv(file)
+            temp_df.rename(columns={'攻击标签':'label','全文本':'text'},inplace=True)
+            total.append(temp_df)
+    total = pd.concat(total)
     return total
 
 def load_bigdata(tokenzier:Tokenizer, max_length:int=512,random_seed:int=42):
     """
     Load the data and return it as a tuple.
     """
-    data = load_bigdata_to_dict(Path("bigdata"))
-    data = datasets.Dataset.from_list(data)
-    data.set_format('pt')
-    data = data.map(lambda x: tokenzier(x['text'],truncation=True,max_length=max_length,padding="max_length"),batched=True)
-    data = data.train_test_split(test_size=0.2,seed=random_seed)
+    cache_path = Path(f"bigdata/data-{random_seed}-{max_length}")
+    if cache_path.exists():
+        data = datasets.load_from_disk(cache_path)
+    else:
+        data = load_bigdata_to_dict(Path("bigdata"))
+        data = datasets.Dataset.from_pandas(data)
+        data.set_format('pt')
+        data = data.map(lambda x: tokenzier(x['text'],truncation=True,max_length=max_length,padding="max_length"),batched=True)
+        data = data.train_test_split(test_size=0.2,seed=random_seed)
+        data.save_to_disk(cache_path)
     return data['train'], data['test']
 
 if __name__ == "__main__":
