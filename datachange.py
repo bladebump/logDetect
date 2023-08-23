@@ -60,7 +60,7 @@ def load_bigdata(tokenzier:Tokenizer, max_length:int=512,random_seed:int=42):
         data = load_bigdata_to_dict(Path("bigdata"))
         data = datasets.Dataset.from_pandas(data)
         data.set_format('pt')
-        data = data.map(lambda x: tokenzier(x['text'],truncation=True,max_length=max_length,padding="max_length"),batched=True)
+        data = data.map(lambda x: tokenzier(x['text'],truncation=True,max_length=max_length,padding="max_length"),batched=True,num_proc=40)
         data = data.train_test_split(test_size=0.2,seed=random_seed)
         data.save_to_disk(cache_path)
     return data['train'], data['test']
