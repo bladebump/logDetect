@@ -45,11 +45,14 @@ def load_bigdata_to_dict(filepath:Path):
             temp_df = pd.read_csv(file)
             temp_df.rename(columns={'攻击标签':'label','全文本':'text'},inplace=True)
             temp_df['label'] = temp_df['label'].astype(int)
+            if file.name.startswith("white"):
+                # 选取1000000个
+                temp_df = temp_df.sample(n=500000)
             total.append(temp_df)
     total = pd.concat(total)
     return total
 
-def load_bigdata(tokenzier:Tokenizer, max_length:int=512,random_seed:int=42):
+def load_bigdata(tokenzier:Tokenizer, max_length:int=512,random_seed:int=42,white_total_num:int=100000,black_total_num:int=100000):
     """
     Load the data and return it as a tuple.
     """
@@ -59,6 +62,8 @@ def load_bigdata(tokenzier:Tokenizer, max_length:int=512,random_seed:int=42):
     else:
         data = load_bigdata_to_dict(Path("bigdata"))
         data = datasets.Dataset.from_pandas(data)
+        data = data.shuffle()
+
         data.set_format('pt')
         data = data.map(lambda x: tokenzier(x['text'],truncation=True,max_length=max_length,padding="max_length"),batched=True,num_proc=40)
         data = data.train_test_split(test_size=0.2,seed=random_seed)
