@@ -44,6 +44,7 @@ def load_bigdata_to_dict(filepath:Path):
         for file in files:
             temp_df = pd.read_csv(file)
             temp_df.rename(columns={'攻击标签':'label','全文本':'text'},inplace=True)
+            temp_df['label'] = temp_df['label'].astype(int)
             total.append(temp_df)
     total = pd.concat(total)
     return total
