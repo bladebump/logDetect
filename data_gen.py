@@ -74,6 +74,10 @@ def conncat_white_to_one_file(root_path):
             with open(files, "r", encoding="utf-8") as f2:
                 f.write(f2.read())
 
+def del_colunms_in_out_files(file_path):
+    df = pd.read_csv(file_path)
+    df = df[df['攻击标签'] != '攻击标签']
+    df.to_csv(file_path)
 
 if __name__ == "__main__":
     out_dir = pathlib.Path(r"bigdata")
@@ -81,4 +85,5 @@ if __name__ == "__main__":
         # out_dir.mkdir()
     # split_to_black_and_white(base_dir, out_dir)
 
-    conncat_white_to_one_file(out_dir)
+    # conncat_white_to_one_file(out_dir)
+    del_colunms_in_out_files(out_dir.joinpath("white.csv"))
