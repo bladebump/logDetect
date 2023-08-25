@@ -18,14 +18,14 @@ if __name__ == "__main__":
     parser.add_argument("--max_length",type=int,default=512)
     parser.add_argument("--num_classes",type=int,default=6)
     parser.add_argument("--tokenizer_name",type=str,default="codeBERTa")
-    parser.add_argument("--debug",type=bool,default=False)
+    parser.add_argument("--debug",type=int,default=0)
     parser.add_argument("--epochs",type=int,default=1)
     parser.add_argument("--seed",type=int,default=42)
     parser.add_argument("--data_name",type=str,default="match")
-    parser.add_argument("--use_mutillabel",type=bool,default=True)
+    parser.add_argument("--use_mutillabel",type=int,default=1)
     args = parser.parse_args()
 
-    debug = args.debug
+    debug = bool(args.debug)
 
     if not debug:
         wandb.login(key='7636d0cc1edf410cae67d21d09968d70d6791a89')
@@ -40,7 +40,7 @@ if __name__ == "__main__":
         config.epochs = args.epochs
         config.seed = args.seed
         config.data_name = args.data_name
-        config.use_mutillabel = args.use_mutillabel
+        config.use_mutillabel = bool(args.use_mutillabel)
 
     tokenizer = AutoTokenizer.from_pretrained(config.tokenizer_name)
     tokenizer.pad_token = tokenizer.eos_token
