@@ -50,6 +50,9 @@ if __name__ == "__main__":
         use_mutillabel = config.use_mutillabel
         train_data, val_data = load_bigdata(tokenizer,max_length=config.max_length,random_seed=config.seed,use_mtilabel=use_mutillabel)
     
+    if not config.use_mutillabel:
+        config.num_classes = 2
+    
     if config.model_name == "LstmPlusTransformerModule":
         model = LstmPlusTransformerModule(tokenizer.vocab_size,num_classes=config.num_classes,lr=config.lr)
     elif config.model_name == "TransformereEncoderClassifier":
