@@ -52,11 +52,11 @@ def load_bigdata_to_dict(filepath:Path):
     total = pd.concat(total)
     return total
 
-def load_bigdata(tokenzier:Tokenizer, max_length:int=512,random_seed:int=42,white_total_num:int=100000,black_total_num:int=100000):
+def load_bigdata(tokenzier:Tokenizer, max_length:int=512,random_seed:int=42,use_mtilabel:bool=True):
     """
     Load the data and return it as a tuple.
     """
-    cache_path = Path(f"bigdata/data-{random_seed}-{max_length}")
+    cache_path = Path(f"bigdata/data-{random_seed}-{max_length}-{use_mtilabel}")
     if cache_path.exists():
         data = datasets.load_from_disk(cache_path)
     else:
@@ -66,6 +66,8 @@ def load_bigdata(tokenzier:Tokenizer, max_length:int=512,random_seed:int=42,whit
 
         data.set_format('pt')
         data = data.map(lambda x: tokenzier(x['text'],truncation=True,max_length=max_length,padding="max_length"),batched=True,num_proc=40)
+        if not use_mtilabel:
+            data = data.map(lambda x: x['label'] if x['label'] == 0 else 1)
         data = data.train_test_split(test_size=0.2,seed=random_seed)
         data.save_to_disk(cache_path)
     return data['train'], data['test']

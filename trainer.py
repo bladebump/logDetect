@@ -22,6 +22,7 @@ if __name__ == "__main__":
     parser.add_argument("--epochs",type=int,default=1)
     parser.add_argument("--seed",type=int,default=42)
     parser.add_argument("--data_name",type=str,default="match")
+    parser.add_argument("--use_mutillabel",type=bool,default=True)
     args = parser.parse_args()
 
     debug = args.debug
@@ -39,13 +40,15 @@ if __name__ == "__main__":
         config.epochs = args.epochs
         config.seed = args.seed
         config.data_name = args.data_name
+        config.use_mutillabel = args.use_mutillabel
 
     tokenizer = AutoTokenizer.from_pretrained(config.tokenizer_name)
     tokenizer.pad_token = tokenizer.eos_token
     if config.data_name == "match":
         train_data, val_data = load_match_data(tokenizer,max_length=config.max_length,random_seed=config.seed)
     elif config.data_name == "bigdata":
-        train_data, val_data = load_bigdata(tokenizer,max_length=config.max_length,random_seed=config.seed)
+        use_mutillabel = config.use_mutillabel
+        train_data, val_data = load_bigdata(tokenizer,max_length=config.max_length,random_seed=config.seed,use_mtilabel=use_mutillabel)
     
     if config.model_name == "LstmPlusTransformerModule":
         model = LstmPlusTransformerModule(tokenizer.vocab_size,num_classes=config.num_classes,lr=config.lr)
