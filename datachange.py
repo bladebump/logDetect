@@ -49,6 +49,10 @@ def load_bigdata_to_dict(filepath:Path,user_mtilabel:bool=True):
             temp_df['label'] = temp_df['label'].astype(int)
             # remove label 4
             temp_df = temp_df[temp_df['label'] != 4]
+            
+            # change label 5 to 4
+            temp_df['label'] = temp_df['label'].apply(lambda x: 4 if x == 5 else x)
+            
             if not user_mtilabel:
                 temp_df['label'] = temp_df['label'].apply(lambda x: label2id[x])
             if file.name.startswith("white"):

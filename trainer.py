@@ -16,7 +16,7 @@ if __name__ == "__main__":
     parser.add_argument("--lr",type=float,default=1e-3)
     parser.add_argument("--batch_size",type=int,default=32)
     parser.add_argument("--max_length",type=int,default=512)
-    parser.add_argument("--num_classes",type=int,default=6)
+    parser.add_argument("--num_classes",type=int,default=5)
     parser.add_argument("--tokenizer_name",type=str,default="codeBERTa")
     parser.add_argument("--debug",type=int,default=0)
     parser.add_argument("--epochs",type=int,default=1)
