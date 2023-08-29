@@ -23,6 +23,7 @@ if __name__ == "__main__":
     parser.add_argument("--seed",type=int,default=42)
     parser.add_argument("--data_name",type=str,default="match")
     parser.add_argument("--use_mutillabel",type=int,default=1)
+    parser.add_argument("--device_id",type=int,default=0)
     args = parser.parse_args()
 
     debug = bool(args.debug)
@@ -69,7 +70,7 @@ if __name__ == "__main__":
         model = CodeBertClassifier(tokenizer.vocab_size,num_classes=config.num_classes,lr=config.lr)
 
     if torch.cuda.is_available():
-        trainer = pl.Trainer(max_epochs=config.epochs,enable_model_summary=True,logger=wandb_logger,devices=[0],accelerator='gpu')
+        trainer = pl.Trainer(max_epochs=config.epochs,enable_model_summary=True,logger=wandb_logger,devices=[args.device_id],accelerator='gpu')
     else:
         config.batch_size = 2
         trainer = pl.Trainer(max_epochs=config.epochs,enable_model_summary=True,logger=wandb_logger)
