@@ -79,6 +79,6 @@ if __name__ == "__main__":
     tokenizer = AutoTokenizer.from_pretrained("codeBERTa")
     
     
-    data_train,data_test = load_bigdata(tokenizer)
+    data_train,data_test = load_bigdata(tokenizer,use_mtilabel=False)
     from collections import Counter
     print(Counter(data_train['label']))
