@@ -64,7 +64,7 @@ def load_bigdata(tokenzier:Tokenizer, max_length:int=512,random_seed:int=42,use_
     if cache_path.exists():
         data = datasets.load_from_disk(cache_path)
     else:
-        data = load_bigdata_to_dict(Path("bigdata"))
+        data = load_bigdata_to_dict(Path("bigdata"),user_mtilabel=use_mtilabel)
         data = datasets.Dataset.from_pandas(data)
         data = data.shuffle()
 
