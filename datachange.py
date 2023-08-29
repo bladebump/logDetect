@@ -47,11 +47,13 @@ def load_bigdata_to_dict(filepath:Path,user_mtilabel:bool=True):
             temp_df = pd.read_csv(file)
             temp_df.rename(columns={'攻击标签':'label','全文本':'text'},inplace=True)
             temp_df['label'] = temp_df['label'].astype(int)
+            # remove label 4
+            temp_df = temp_df[temp_df['label'] != 4]
             if not user_mtilabel:
                 temp_df['label'] = temp_df['label'].apply(lambda x: label2id[x])
             if file.name.startswith("white"):
                 # 选取1000000个
-                temp_df = temp_df.sample(n=500000)
+                temp_df = temp_df.sample(n=5000000)
             total.append(temp_df)
     total = pd.concat(total)
     return total
@@ -79,6 +81,6 @@ if __name__ == "__main__":
     tokenizer = AutoTokenizer.from_pretrained("codeBERTa")
     
     
-    data_train,data_test = load_bigdata(tokenizer,use_mtilabel=False)
+    data_train,data_test = load_bigdata(tokenizer,use_mtilabel=True)
     from collections import Counter
     print(Counter(data_train['label']))
