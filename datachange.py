@@ -4,6 +4,8 @@ import pandas as pd
 from pathlib import Path
 import pandas as pd
 
+label2id = {0:0,1:1,2:1,3:1,4:1,5:1}
+
 def load_data(tokenzier:Tokenizer, max_length:int=512):
     """
     Load the data and return it as a tuple.
@@ -67,7 +69,7 @@ def load_bigdata(tokenzier:Tokenizer, max_length:int=512,random_seed:int=42,use_
         data.set_format('pt')
         data = data.map(lambda x: tokenzier(x['text'],truncation=True,max_length=max_length,padding="max_length"),batched=True,num_proc=40)
         if not use_mtilabel:
-            data = data.map(lambda x: x['label'] if x['label'] == 0 else 1)
+            data = data.align_labels_with_mapping(label2id)
         data = data.train_test_split(test_size=0.2,seed=random_seed)
         data.save_to_disk(cache_path)
     return data['train'], data['test']
