@@ -57,7 +57,7 @@ def load_bigdata_to_dict(filepath:Path,user_mtilabel:bool=True):
                 temp_df['label'] = temp_df['label'].apply(lambda x: label2id[x])
             if file.name.startswith("white"):
                 # 选取1000000个
-                temp_df = temp_df.sample(n=5000000)
+                temp_df = temp_df.sample(n=2000000)
             total.append(temp_df)
     total = pd.concat(total)
     return total
