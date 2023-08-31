@@ -3,6 +3,7 @@ from tokenizers import Tokenizer
 import pandas as pd
 from pathlib import Path
 import pandas as pd
+import torch
 
 label2id = {0:0,1:1,2:1,3:1,4:1,5:1}
 
@@ -80,11 +81,29 @@ def load_bigdata(tokenzier:Tokenizer, max_length:int=512,random_seed:int=42,use_
         data.save_to_disk(cache_path)
     return data['train'], data['test']
 
+def make_weights_for_balanced_classes(labels,num_classes):
+    count = [0] * num_classes
+    for item in labels:
+        count[item] += 1
+    weight_per_class = [0.] * num_classes
+    N = float(sum(count))
+    for i in range(num_classes):
+        weight_per_class[i] = N/float(count[i])
+    weight = [0] * len(labels)
+    for idx,val in enumerate(labels):
+        weight[idx] = weight_per_class[val]
+    return weight
+
 if __name__ == "__main__":
     from transformers import AutoTokenizer
     tokenizer = AutoTokenizer.from_pretrained("codeBERTa")
     
     
     data_train,data_test = load_bigdata(tokenizer,use_mtilabel=True)
-    from collections import Counter
-    print(Counter(data_train['label']))
+    
+    weights = make_weights_for_balanced_classes(data_train['label'],5)
+    sampler = torch.utils.data.sampler.WeightedRandomSampler(weights,len(weights))
+    dataloader = torch.utils.data.DataLoader(data_train,sampler=sampler,batch_size=32)
+    for batch in dataloader:
+        print(batch['label'])
+        break

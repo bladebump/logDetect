@@ -1,4 +1,4 @@
-from datachange import load_match_data,load_bigdata
+from datachange import load_match_data,load_bigdata,make_weights_for_balanced_classes
 from models import TransformereEncoderClassifier,LstmPlusTransformerModule,RetNetClassifier,LstmClassifier,textCnnClassifier,textCnnAndLstmClassifier,CodeBertClassifier
 import pytorch_lightning as pl
 from pytorch_lightning.callbacks import EarlyStopping
@@ -26,6 +26,7 @@ if __name__ == "__main__":
     parser.add_argument("--use_mutillabel",type=int,default=1)
     parser.add_argument("--device_id",type=int,default=0)
     parser.add_argument("--limit_train_batches",type=float,default=0.1)
+    parser.add_argument("--use_weight",type=int,default=0)
     args = parser.parse_args()
 
     debug = bool(args.debug)
@@ -45,6 +46,7 @@ if __name__ == "__main__":
         config.data_name = args.data_name
         config.use_mutillabel = bool(args.use_mutillabel)
         config.limit_train_batches = args.limit_train_batches
+        config.use_weight = bool(args.use_weight)
 
     tokenizer = AutoTokenizer.from_pretrained(config.tokenizer_name)
     tokenizer.pad_token = tokenizer.eos_token
@@ -79,6 +81,11 @@ if __name__ == "__main__":
         config.batch_size = 2
         trainer = pl.Trainer(max_epochs=config.epochs,enable_model_summary=True,logger=wandb_logger,limit_train_batches=config.limit_train_batches,callbacks=[EarlyStopping(monitor='val_loss')])
 
-    train_data = DataLoader(train_data,batch_size=config.batch_size,shuffle=True,drop_last=True)
+    if config.use_weight:
+        weights = make_weights_for_balanced_classes(train_data['label'],config.num_classes)
+        sampler = torch.utils.data.sampler.WeightedRandomSampler(weights,len(weights))
+        train_data = DataLoader(train_data,batch_size=config.batch_size,shuffle=True,drop_last=True,sampler=sampler)
+    else:
+        train_data = DataLoader(train_data,batch_size=config.batch_size,shuffle=True,drop_last=True)
     val_data = DataLoader(val_data,batch_size=config.batch_size,shuffle=True,drop_last=True)
     trainer.fit(model, train_data,val_dataloaders=val_data)
