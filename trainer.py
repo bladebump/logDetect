@@ -1,6 +1,7 @@
 from datachange import load_match_data,load_bigdata
 from models import TransformereEncoderClassifier,LstmPlusTransformerModule,RetNetClassifier,LstmClassifier,textCnnClassifier,textCnnAndLstmClassifier,CodeBertClassifier
 import pytorch_lightning as pl
+from pytorch_lightning.callbacks import EarlyStopping
 from pytorch_lightning.loggers import WandbLogger
 from transformers import AutoTokenizer
 from torch.utils.data import DataLoader
@@ -24,6 +25,7 @@ if __name__ == "__main__":
     parser.add_argument("--data_name",type=str,default="match")
     parser.add_argument("--use_mutillabel",type=int,default=1)
     parser.add_argument("--device_id",type=int,default=0)
+    parser.add_argument("--limit_train_batches",type=float,default=0.1)
     args = parser.parse_args()
 
     debug = bool(args.debug)
@@ -42,6 +44,7 @@ if __name__ == "__main__":
         config.seed = args.seed
         config.data_name = args.data_name
         config.use_mutillabel = bool(args.use_mutillabel)
+        config.limit_train_batches = args.limit_train_batches
 
     tokenizer = AutoTokenizer.from_pretrained(config.tokenizer_name)
     tokenizer.pad_token = tokenizer.eos_token
@@ -71,10 +74,10 @@ if __name__ == "__main__":
 
     if torch.cuda.is_available():
         print("Using GPU")
-        trainer = pl.Trainer(max_epochs=config.epochs,enable_model_summary=True,logger=wandb_logger,devices=[args.device_id],accelerator='gpu')
+        trainer = pl.Trainer(max_epochs=config.epochs,enable_model_summary=True,logger=wandb_logger,devices=[args.device_id],accelerator='gpu',limit_train_batches=config.limit_train_batches,callbacks=[EarlyStopping(monitor='val_loss')])
     else:
         config.batch_size = 2
-        trainer = pl.Trainer(max_epochs=config.epochs,enable_model_summary=True,logger=wandb_logger)
+        trainer = pl.Trainer(max_epochs=config.epochs,enable_model_summary=True,logger=wandb_logger,limit_train_batches=config.limit_train_batches,callbacks=[EarlyStopping(monitor='val_loss')])
 
     train_data = DataLoader(train_data,batch_size=config.batch_size,shuffle=True,drop_last=True)
     val_data = DataLoader(val_data,batch_size=config.batch_size,shuffle=True,drop_last=True)
