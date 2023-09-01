@@ -83,7 +83,7 @@ if __name__ == "__main__":
     if config.use_weight:
         weights = make_weights_for_balanced_classes(train_data['label'],config.num_classes)
         sampler = torch.utils.data.sampler.WeightedRandomSampler(weights,len(weights))
-        train_data = DataLoader(train_data,batch_size=config.batch_size,shuffle=True,drop_last=True,sampler=sampler)
+        train_data = DataLoader(train_data,batch_size=config.batch_size,shuffle=False,drop_last=True,sampler=sampler)
     else:
         train_data = DataLoader(train_data,batch_size=config.batch_size,shuffle=True,drop_last=True)
     val_data = DataLoader(val_data,batch_size=config.batch_size,shuffle=True,drop_last=True)
