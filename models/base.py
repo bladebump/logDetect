@@ -38,6 +38,13 @@ class BaseClassifier(pl.LightningModule):
         self.log(out_str + '_auroc', auroc)
         ap = self.ap(outputs, labels)
         self.log(out_str + '_ap', ap)
+        confusion_matrix = self.confusion_matrix(outputs, labels)
+        
+        # log confusion matrix
+        for i in range(confusion_matrix.shape[0]):
+            for j in range(confusion_matrix.shape[1]):
+                self.log(out_str + f'_confusion_matrix_{i}_{j}', confusion_matrix[i][j])
+                
         return loss
     
     def training_step(self, batch, batch_idx):

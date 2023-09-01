@@ -13,7 +13,7 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--rune_name",type=str)
-    parser.add_argument("--model_name",type=str,default="TestModule")
+    parser.add_argument("--model_name",type=str,default="textCnnClassifier")
     parser.add_argument("--lr",type=float,default=1e-3)
     parser.add_argument("--batch_size",type=int,default=32)
     parser.add_argument("--max_length",type=int,default=512)
@@ -78,7 +78,6 @@ if __name__ == "__main__":
         print("Using GPU")
         trainer = pl.Trainer(max_epochs=config.epochs,enable_model_summary=True,logger=wandb_logger,devices=[args.device_id],accelerator='gpu',limit_train_batches=config.limit_train_batches,callbacks=[EarlyStopping(monitor='val_loss')])
     else:
-        config.batch_size = 2
         trainer = pl.Trainer(max_epochs=config.epochs,enable_model_summary=True,logger=wandb_logger,limit_train_batches=config.limit_train_batches,callbacks=[EarlyStopping(monitor='val_loss')])
 
     if config.use_weight:
