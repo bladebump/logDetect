@@ -3,3 +3,4 @@ bigdata/
 wandb/
 *.bin
 logs/
+.vscode/
