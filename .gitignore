@@ -4,3 +4,5 @@ wandb/
 *.bin
 logs/
 .vscode/
+saves/
+data/

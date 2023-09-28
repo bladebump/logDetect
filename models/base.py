@@ -1,6 +1,7 @@
 import torch
 import pytorch_lightning as pl
-from torchmetrics import Accuracy, F1Score, Precision, Recall, AUROC, AveragePrecision, ConfusionMatrix
+from torchmetrics import Accuracy, F1Score, Precision, Recall, AUROC, AveragePrecision
+import time
 
 class BaseClassifier(pl.LightningModule):
     def __init__(self, vocab_size, num_classes,lr,**kwargs):
@@ -15,7 +16,6 @@ class BaseClassifier(pl.LightningModule):
         self.recall = Recall(task='multiclass',num_classes=num_classes,average='macro')
         self.auroc = AUROC(task='multiclass',num_classes=num_classes)
         self.ap = AveragePrecision(task='multiclass',num_classes=num_classes)
-        self.confusion_matrix = ConfusionMatrix(task='multiclass',num_classes=num_classes)
         self.loss = torch.nn.CrossEntropyLoss()
 
     def forward(self, input_ids,attention_mask=None,**kwargs):
@@ -23,7 +23,10 @@ class BaseClassifier(pl.LightningModule):
 
     def one_step(self,batch,batch_idx,out_str):
         input_ids, attention_mask, labels = batch['input_ids'], batch['attention_mask'], batch['label']
+
+        start = time.time()
         outputs = self.forward(input_ids, attention_mask=attention_mask)
+        end = time.time()
         loss = self.loss(outputs, labels)
         self.log(out_str + "_loss", loss)
         acc = self.acc(outputs, labels)
@@ -38,12 +41,7 @@ class BaseClassifier(pl.LightningModule):
         self.log(out_str + '_auroc', auroc)
         ap = self.ap(outputs, labels)
         self.log(out_str + '_ap', ap)
-        confusion_matrix = self.confusion_matrix(outputs, labels)
-        
-        # log confusion matrix
-        for i in range(confusion_matrix.shape[0]):
-            for j in range(confusion_matrix.shape[1]):
-                self.log(out_str + f'_confusion_matrix_{i}_{j}', confusion_matrix[i][j])
+        self.log(out_str + '_time', end - start)
                 
         return loss
     

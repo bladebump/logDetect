@@ -7,15 +7,6 @@ import torch
 
 label2id = {0:0,1:1,2:1,3:1,4:1,5:1}
 
-def load_data(tokenzier:Tokenizer, max_length:int=512):
-    """
-    Load the data and return it as a tuple.
-    """
-    data = datasets.load_dataset("text",data_dir="data")
-    data = data['train'].map(lambda x: tokenzier.encode(x['text'],truncation=True,max_length=max_length),batched=True)
-    trainer_datasets, val_datasets = data.train_test_split(test_size=0.1)
-    return trainer_datasets, val_datasets
-
 def load_files_to_dict(filepath:Path):
     if filepath.is_dir():
         label = 0
